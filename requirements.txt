@@ -22,6 +22,7 @@ matplotlib==3.8.0
 matplotlib-inline==0.1.6
 mne==1.5.1
 mne-bids==0.13
+mne-bids-pipeline
 nest-asyncio==1.5.8
 numpy==1.26.1
 osfclient==0.0.5
