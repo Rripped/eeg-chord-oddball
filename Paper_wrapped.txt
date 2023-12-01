@@ -1,0 +1,94 @@
+Abstract:
+	Menschen, die häufiger improvisieren, erkennen Abweichungen in Akkordfolgen schneller/ besser als jene, die nicht improvisieren.
+
+Differences in the use of musical structures:
+	Improvisierende tendieren dazu, Noten "allgemeiner" zu notieren als z.B. Klassiker, welche selten Noten eines Stückes abändern.
+
+The current study:
+	Wenn Erkennung einer Abweichung Klassifikation erfordert, wird die N2c Komponente aktiviert. 
+	--> kontrollierter Prozess, statt reizgesteuert
+	--> größere Abweichung, stärker ausgeprägte N2c Komponente
+	--> auch P3 Komponente sollte ausgelöst werden (hauptsächlich P3b - Stärke individuell unterschiedlich)
+
+
+
+Methods_
+Participants:
+	Formeller Unterricht in einem Instrument, sowie im Improvisieren.
+	--> keine körperlichen Einschränkungen
+
+Experimental design:
+	40 Teilnehmer, 25.28 Jahre alt, 24 Männer
+
+Stimuli:
+	Spätere Analyse bezieht sich nur auf Stunden Improvisation ab 18 Jahren und älter, da frühere Datenlage unklar (impHours und nonImpHours).
+	PianoYears hinzugefügt, weil Stimuli nahe an Piano (timbre).
+	
+	Chord Progression: 3 Chords je 400ms am Ende 400ms Stille = 16000ms je Versuch; Versuche kontinuierlich hintereinander.
+	180 Chord Progressionen je Block; 8 Blöcke insgesamt (2 je Blockart + 1 Übungsblock).
+	Töne duch pyMidi und GarageBand; gleiche Stimuli für alle Probanden, aber andere Blockreihenfolge; kurze Pause nach jedem Block.
+
+	bisschen blabla über Töne...
+
+Procedure:
+	Bose in-ear noise cancelling Kopfhörer; sollen Leertaste drücken, sobald sie anderen Ton hören.
+	Zu Beginn eine Reihe von Standardtönen zur besseren Einordnung.
+	
+	EEG Daten über 64 Elektroden im 10-20 System angeordnet sampled mit 2048Hz mit einem BioSemi Active Two AD Box ADC-12 amplifier.
+	
+Behavioral data analysis:
+	Schneller auch akurater.
+	Höherer logIES Wert --> Teilnehmer schneller und besser auf funcDeviants reagiert als auf exemDeviants.
+	
+EEG preprocessing:
+	Preprocessing mithilfe von EEGLAB; Event Marker offline mit Audio Channel Daten.
+	Schlechte Channel mit EEGLAB's eingebauter Funktion interpoliert (durchschn. 3.16 ± 0.25 Channel interpoliert je Block)
+	Daten von 2048Hz auf 64Hz downsampled; Bandpass Filter zwischen 0.50Hz und 30Hz (& referenziert zu durchschn. Aktivität aller Elektroden).
+	Augenbewegungen mithilfe von ICA (independent component analysis) aussortiert.
+	Baseline mithilfe einer Latenz von 100ms entfernt, sowie Deviant Epochen mit geringerer Reaktionszeit als 200ms.
+	EEGLAB Funktionen um Epochen mit Extremwerten (außerhalb −250 bis 250 μV) zu entfernen, sowie wahrscheinlichkeitsbasiert (außerhalb 5 SD).
+--> exemDeviant Epochen (68.35 ± 3.95), funcDeviantEpochen (78.25 ± 3.06), standard Deviant Epochen (994.70 ± 23.51) je Teilnehmer.
+
+Linear discriminant analysis of EEG:
+	Genutzt um exemDeviant und funcDeviant von Standard Epochen im EEG zu unterscheiden.
+	Welche Kombination von Elektroden Aktivitäten beschreibt die spezifischen Epochen am besten.
+	Oben zusammen mit Latenzinformationen hat ähnlichen Output wie ERP Analyse. 
+
+
+
+Results_
+Identifying regions of single-trial discriminability:
+	Two-tailed paired sample t-test --> zwei zusammenhängende Regionen (214ms - 293ms und 419ms - 576ms).
+	Erste Region: Frontozentrale Negativität matcht auditive N2c ERP Komponente.
+	Zweite Region: Hintere Positivität matcht P3b Komponente.
+	Topografien und Latenzen sehr ähnlich zwischen exemDeviant und funcDeviant.
+	FuncDeviant hat diskriminierbarere N2c und P3b Aktivität als exemDeviant (höher EarlyAUC und LateAUC).
+
+Behavioral and neural discriminability of deviant types:
+	Perfect Pitch hat starke Korrelation mit nonImpHours und pianoYears und Effekt auf Wahrnehmungsverarbeitung.
+	PP wurde auch mit Unterschieden in P3 Aktivitäten in Verbindung gebracht.
+	PP Teilnehmer wurden nonImp zugewiesen.
+	Mehr impHours: schneller und akkurater auf funcDeviants reagiert als exemDeviants.
+	Mehr pianoYears: schlechtere Diskriminierbarkeit zwischen funcDeviants und exemDeviants.
+	Verhaltensleistung korreliert mit N2c und P3b Aktivität.
+	EarlyAUC und LateAUC korrelieren miteinander: größere N2c Diskriminierbarkeit entspricht größerer P3b Diskriminierbarkeit.
+
+Interval analysis:
+	Längere Intervalle sagen bessere Diskriminierbarkeit weder bei verhaltenstechnischen noch neuronalen Daten voraus.
+
+
+
+Discussion_
+
+	
+	
+	
+	
+	
+
+
+
+- oddball (paradigm)
+- Data from standard trials (not including false alarms) and deviant trials (only including hits) were epoched into 2000 ms epochs, ranging from 400 ms 	before the second chord of the progression to 1600 ms after it. In these epochs, 0 ms corresponds to the onset of the middle chord because that is 	the first point in time when a participant can possibly identify the deviants. 
+- SD = Standard Deviation? (EEG preprocessing - 6)
+- Variablen genau erklären!
