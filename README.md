@@ -9,6 +9,6 @@ Music chord oddball eeg analysis (ERP)
 
 - install conda
 - install mamba: `conda install --channel=conda-forge mamba`
-- create conda env for the pipeline: `mamba create --override-channels --channel=conda-forge --name=mne mne-bids-pipeline`
+- create conda env for the pipeline: `mamba create --override-channels --channel=conda-forge --name=mne mne-bids-pipeline --file mne_pipeline/requirements.txt`
 
 - start new terminal session and activate the env: `conda activate mne`
