@@ -158,7 +158,7 @@ plot_psd_for_runs: Union[Literal["all"], Iterable[str]] = "all"
 # plotting.
 # """
 
-subjects: Union[Iterable[str], Literal["all"]] = ["sub-014"]
+subjects: Union[Iterable[str], Literal["all"]] = ["014"]
 # """
 # Subjects to analyze. If `'all'`, include all subjects. To only
 # include a subset of subjects, pass a list of their identifiers. Even
@@ -259,7 +259,7 @@ data_type: Optional[Literal["meg", "eeg"]] = "eeg"
 #     ```
 # """
 
-eog_channels: Optional[Iterable[str]] = None
+# eog_channels: Optional[Iterable[str]] = None
 # """
 # Specify EOG channels to use, or create virtual EOG channels.
 
@@ -390,7 +390,9 @@ drop_channels: Iterable[str] = []
 #     ```
 # """
 
-analyze_channels: Union[Literal["all"], Literal["ch_types"], Iterable["str"]] = "all"
+analyze_channels: Union[
+    Literal["all"], Literal["ch_types"], Iterable["str"]
+] = "ch_types"
 # """
 # The names of the channels to analyze during ERP/ERF and time-frequency analysis
 # steps. For certain paradigms, e.g. EEG ERP research, it is common to constrain
@@ -781,13 +783,13 @@ t_break_annot_stop_before_next_event: float = 5.0
 # --------------------------------
 # done in 02-frequency_filter.py
 
-# l_freq: Optional[float] = None
+l_freq: Optional[float] = 0.5  # hz?
 # """
 # The low-frequency cut-off in the highpass filtering step.
 # Keep it `None` if no highpass filtering should be applied.
 # """
 
-# h_freq: Optional[float] = 40.0
+h_freq: Optional[float] = 30.0
 # """
 # The high-frequency cut-off in the lowpass filtering step.
 # Keep it `None` if no lowpass filtering should be applied.
@@ -836,7 +838,7 @@ t_break_annot_stop_before_next_event: float = 5.0
 # Specifies the width of each stop band. `None` uses the MNE default.
 # """
 
-# raw_resample_sfreq: Optional[float] = None
+raw_resample_sfreq: Optional[float] = 128  # hz?
 # """
 # Specifies at which sampling frequency the data should be resampled.
 # If `None`, then no resampling will be done.
@@ -874,7 +876,7 @@ t_break_annot_stop_before_next_event: float = 5.0
 # RENAME EXPERIMENTAL EVENTS
 # --------------------------
 
-# rename_events: dict = dict()
+rename_events: dict = dict()
 # """
 # A dictionary specifying which events in the BIDS dataset to rename upon
 # loading, and before processing begins.
@@ -889,7 +891,7 @@ t_break_annot_stop_before_next_event: float = 5.0
 #     ```
 # """
 
-# on_rename_missing_events: Literal["ignore", "warn", "raise"] = "raise"
+on_rename_missing_events: Literal["ignore", "warn", "raise"] = "raise"
 # """
 # How to handle the situation where you specified an event to be renamed via
 # `rename_events`, but this particular event is not present in the data. By
@@ -983,7 +985,24 @@ t_break_annot_stop_before_next_event: float = 5.0
 #     ```
 # """  # noqa: E501
 
-conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
+conditions: Optional[Union[Iterable[str], Dict[str, str]]] = [
+    "STATUS:five6_deviantE",
+    "STATUS:five6_deviantEcorrect_E",
+    "STATUS:five6_deviantF",
+    "STATUS:five6_deviantFcorrect_F",
+    "STATUS:fiveRoot_deviantE",
+    "STATUS:fiveRoot_deviantEcorrect_E",
+    "STATUS:fiveRoot_deviantF",
+    "STATUS:fiveRoot_deviantFcorrect_F",
+    "STATUS:four6_deviantE",
+    "STATUS:four6_deviantEcorrect_E",
+    "STATUS:four6_deviantF",
+    "STATUS:four6_deviantFcorrect_F",
+    "STATUS:fourRoot_deviantE",
+    "STATUS:fourRoot_deviantEcorrect_E",
+    "STATUS:fourRoot_deviantF",
+    "STATUS:fourRoot_deviantFcorrect_F",
+]
 # """
 # The time-locked events based on which to create evoked responses.
 # This can either be name of the experimental condition as specified in the
@@ -1016,7 +1035,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #                   'incorrect': 'response/incorrect'}
 # """  # noqa : E501
 
-# epochs_tmin: float = -0.2
+epochs_tmin: float = -0.4
 # """
 # The beginning of an epoch, relative to the respective event, in seconds.
 
@@ -1026,7 +1045,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     ```
 # """
 
-# epochs_tmax: float = 0.5
+epochs_tmax: float = 1.6
 # """
 # The end of an epoch, relative to the respective event, in seconds.
 # ???+ example "Example"
@@ -1051,7 +1070,10 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # and when the annotations do not contain any stimulation or behavior events.
 # """
 
-# baseline: Optional[Tuple[Optional[float], Optional[float]]] = (None, 0)
+baseline: Optional[Tuple[Optional[float], Optional[float]]] = (
+    None,
+    0.4,
+)  # different to script where it is 0.3 - 0.4
 # """
 # Specifies which time interval to use for baseline correction of epochs;
 # if `None`, no baseline correction is applied.
@@ -1129,7 +1151,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #
 # Currently you cannot use both.
 
-# spatial_filter: Optional[Literal["ssp", "ica"]] = None
+spatial_filter: Optional[Literal["ssp", "ica"]] = "ica"
 # """
 # Whether to use a spatial filter to detect and remove artifacts. The BIDS
 # Pipeline offers the use of signal-space projection (SSP) and independent
@@ -1236,7 +1258,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 
 # Rejection based on ICA
 # ~~~~~~~~~~~~~~~~~~~~~~
-# ica_reject: Optional[Union[Dict[str, float], Literal["autoreject_local"]]] = None
+ica_reject: Optional[Union[Dict[str, float], Literal["autoreject_local"]]] = None  # tbd
 # """
 # Peak-to-peak amplitude limits to exclude epochs from ICA fitting. This allows you to
 # remove strong transient artifacts from the epochs used for fitting ICA, which could
@@ -1285,16 +1307,16 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     ```
 # """
 
-# ica_algorithm: Literal[
-#     "picard", "fastica", "extended_infomax", "picard-extended_infomax"
-# ] = "picard"
+ica_algorithm: Literal[
+    "picard", "fastica", "extended_infomax", "picard-extended_infomax"
+] = "picard"
 # """
 # The ICA algorithm to use. `"picard-extended_infomax"` operates `picard` such that the
 # generated ICA decomposition is identical to the one generated by the extended Infomax
 # algorithm (but may converge in less time).
 # """
 
-# ica_l_freq: Optional[float] = 1.0
+ica_l_freq: Optional[float] = 1.0
 # """
 # The cutoff frequency of the high-pass filter to apply before running ICA.
 # Using a relatively high cutoff like 1 Hz will remove slow drifts from the
@@ -1315,7 +1337,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     us so we can discuss.
 # """
 
-# ica_max_iterations: int = 500
+ica_max_iterations: int = 3000
 # """
 # Maximum number of iterations to decompose the data into independent
 # components. A low number means to finish earlier, but the consequence is
@@ -1328,7 +1350,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # limit may be too low to achieve convergence.
 # """
 
-# ica_n_components: Optional[Union[float, int]] = 0.8
+ica_n_components: Optional[Union[float, int]] = 0.8
 # """
 # MNE conducts ICA as a sort of a two-step procedure: First, a PCA is run
 # on the data (trying to exclude zero-valued components in rank-deficient
@@ -1352,7 +1374,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # This setting may drastically alter the time required to compute ICA.
 # """
 
-# ica_decim: Optional[int] = None
+ica_decim: Optional[int] = None
 # """
 # The decimation parameter to compute ICA. If 5 it means
 # that 1 every 5 sample is used by ICA solver. The higher the faster
@@ -1375,9 +1397,9 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # Rejection based on peak-to-peak amplitude
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# reject: Optional[
-#     Union[Dict[str, float], Literal["autoreject_global", "autoreject_local"]]
-# ] = None
+reject: Optional[
+    Union[Dict[str, float], Literal["autoreject_global", "autoreject_local"]]
+] = None  # needed? tbd
 # """
 # Peak-to-peak amplitude limits to mark epochs as bad. This allows you to remove
 # epochs with strong transient artifacts.
@@ -1414,7 +1436,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     ```
 # """
 
-# reject_tmin: Optional[float] = None
+reject_tmin: Optional[float] = None
 # """
 # Start of the time window used to reject epochs. If `None`, the window will
 # start with the first time point. Has no effect if
@@ -1426,7 +1448,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     ```
 # """
 
-# reject_tmax: Optional[float] = None
+reject_tmax: Optional[float] = None
 # """
 # End of the time window used to reject epochs. If `None`, the window will end
 # with the last time point. Has no effect if
@@ -1438,7 +1460,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     ```
 # """
 
-# autoreject_n_interpolate: FloatArrayLike = [4, 8, 16]
+autoreject_n_interpolate: FloatArrayLike = [4, 8, 16]
 # """
 # The maximum number of bad channels in an epoch that `autoreject` local will try to
 # interpolate. The optimal number among this list will be estimated using a
@@ -1596,7 +1618,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # GROUP AVERAGE SENSORS
 # ---------------------
 
-# interpolate_bads_grand_average: bool = True
+interpolate_bads_grand_average: bool = True  # turn off?
 # """
 # Interpolate bad sensors in each dataset before calculating the grand
 # average. This parameter is passed to the `mne.grand_average` function via
@@ -2075,7 +2097,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # Report generation
 # -----------------
 
-# report_evoked_n_time_points: Optional[int] = None
+report_evoked_n_time_points: Optional[int] = None  # implicit
 # """
 # Specifies the number of time points to display for each evoked
 # in the report. If `None`, it defaults to the current default in MNE-Python.
@@ -2087,7 +2109,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     ```
 # """
 
-# report_stc_n_time_points: Optional[int] = None
+report_stc_n_time_points: Optional[int] = None
 # """
 # Specifies the number of time points to display for each source estimates
 # in the report. If `None`, it defaults to the current default in MNE-Python.
@@ -2103,13 +2125,13 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # Execution
 # ---------
 
-# n_jobs: int = 1
+n_jobs: int = 4
 # """
 # Specifies how many subjects you want to process in parallel. If `1`, disables
 # parallel processing.
 # """
 
-# parallel_backend: Literal["loky", "dask"] = "loky"
+parallel_backend: Literal["loky", "dask"] = "loky"
 # """
 # Specifies which backend to use for parallel job execution. `loky` is the
 # default backend used by `joblib`. `dask` requires [`Dask`](https://dask.org) to
@@ -2141,7 +2163,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # The maximum amount of RAM per Dask worker.
 # """
 
-# random_state: Optional[int] = 42
+random_state: Optional[int] = 42
 # """
 # You can specify the seed of the random number generator (RNG).
 # This setting is passed to the ICA algorithm and to the decoding function,
@@ -2149,23 +2171,23 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # to a defined state.
 # """
 
-# shortest_event: int = 1
+shortest_event: int = 1
 # """
 # Minimum number of samples an event must last. If the
 # duration is less than this, an exception will be raised.
 # """
 
-# log_level: Literal["info", "error"] = "info"
+log_level: Literal["info", "error"] = "info"
 # """
 # Set the pipeline logging verbosity.
 # """
 
-# mne_log_level: Literal["info", "error"] = "error"
+mne_log_level: Literal["info", "error"] = "error"
 # """
 # Set the MNE-Python logging verbosity.
 # """
 
-# on_error: Literal["continue", "abort", "debug"] = "abort"
+on_error: Literal["continue", "abort", "debug"] = "abort"
 # """
 # Whether to abort processing as soon as an error occurs, continue with all other
 # processing steps for as long as possible, or drop you into a debugger in case
@@ -2175,7 +2197,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 #     Enabling debug mode deactivates parallel processing.
 # """
 
-# memory_location: Optional[Union[PathLike, bool]] = True
+memory_location: Optional[Union[PathLike, bool]] = True
 # """
 # If not None (or False), caching will be enabled and the cache files will be
 # stored in the given directory. The default (True) will use a
@@ -2184,12 +2206,12 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # variable) in the BIDS derivative root of the dataset.
 # """
 
-# memory_subdir: str = "_cache"
+memory_subdir: str = "_cache"
 # """
 # The caching directory name to use if `memory_location` is `True`.
 # """
 
-# memory_file_method: Literal["mtime", "hash"] = "mtime"
+memory_file_method: Literal["mtime", "hash"] = "mtime"
 # """
 # The method to use for cache invalidation (i.e., detecting changes). Using the
 # "modified time" reported by the filesystem (`'mtime'`, default) is very fast
@@ -2204,7 +2226,7 @@ conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # 1 will print the function calls that will be cached. See the documentation for
 # the joblib.Memory class for more information."""
 
-# config_validation: Literal["raise", "warn", "ignore"] = "raise"
+config_validation: Literal["raise", "warn", "ignore"] = "warn"
 # """
 # How strictly to validate the configuration. Errors are always raised for
 # invalid entries (e.g., not providing `ch_types`). This setting controls
