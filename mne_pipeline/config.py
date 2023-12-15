@@ -79,7 +79,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     and want to run the source analysis steps.
 # """
 
-# interactive: bool = False
+interactive: bool = False
 # """
 # If True, the steps will provide some interactive elements, such as
 # figures. If running the steps from a notebook or Spyder,
@@ -90,7 +90,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     Enabling interactive mode deactivates parallel processing.
 # """
 
-# sessions: Union[List, Literal["all"]] = "all"
+sessions: Union[List, Literal["all"]] = "all"
 # """
 # The sessions to process. If `'all'`, will process all sessions found in the
 # BIDS dataset.
@@ -101,13 +101,13 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 # The task to process.
 # """
 
-# runs: Union[Iterable, Literal["all"]] = "all"
+runs: Union[Iterable, Literal["all"]] = "all"
 # """
 # The runs to process. If `'all'`, will process all runs found in the
 # BIDS dataset.
 # """
 
-# exclude_runs: Optional[Dict[str, List[str]]] = None
+exclude_runs: Optional[Dict[str, List[str]]] = None
 # """
 # Specify runs to exclude from analysis, for each participant individually.
 
@@ -123,7 +123,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     did not understand the instructions, etc.).
 # """
 
-# crop_runs: Optional[Tuple[float, float]] = None
+crop_runs: Optional[Tuple[float, float]] = None
 # """
 # Crop the raw data of each run to the specified time interval `[tmin, tmax]`,
 # in seconds. The runs will be cropped before Maxwell or frequency filtering is
@@ -150,7 +150,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 # The BIDS `space` entity.
 # """
 
-# plot_psd_for_runs: Union[Literal["all"], Iterable[str]] = "all"
+plot_psd_for_runs: Union[Literal["all"], Iterable[str]] = "all"
 # """
 # For which runs to add a power spectral density (PSD) plot to the generated
 # report. This can take a considerable amount of time if you have many long
@@ -158,7 +158,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 # plotting.
 # """
 
-# subjects: Union[Iterable[str], Literal["all"]] = "all"
+subjects: Union[Iterable[str], Literal["all"]] = ["sub-014"]
 # """
 # Subjects to analyze. If `'all'`, include all subjects. To only
 # include a subset of subjects, pass a list of their identifiers. Even
@@ -208,7 +208,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 # covariance (via `noise_cov='rest'`).
 # """
 
-# ch_types: Iterable[Literal["meg", "mag", "grad", "eeg"]] = []
+ch_types: Iterable[Literal["meg", "mag", "grad", "eeg"]] = ["eeg"]
 # """
 # The channel types to consider.
 
@@ -225,7 +225,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# data_type: Optional[Literal["meg", "eeg"]] = None
+data_type: Optional[Literal["meg", "eeg"]] = "eeg"
 # """
 # The BIDS data type.
 
@@ -259,7 +259,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# eog_channels: Optional[Iterable[str]] = None
+eog_channels: Optional[Iterable[str]] = None
 # """
 # Specify EOG channels to use, or create virtual EOG channels.
 
@@ -294,7 +294,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# eeg_bipolar_channels: Optional[Dict[str, Tuple[str, str]]] = None
+eeg_bipolar_channels: Optional[Dict[str, Tuple[str, str]]] = None
 # """
 # Combine two channels into a bipolar channel, whose signal is the **difference**
 # between the two combined channels, and add it to the data.
@@ -327,7 +327,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# eeg_reference: Union[Literal["average"], str, Iterable["str"]] = "average"
+eeg_reference: Union[Literal["average"], str, Iterable["str"]] = "average"
 # """
 # The EEG reference to use. If `average`, will use the average reference,
 # i.e. the average across all channels. If a string, must be the name of a single
@@ -377,7 +377,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# drop_channels: Iterable[str] = []
+drop_channels: Iterable[str] = []
 # """
 # Names of channels to remove from the data. This can be useful, for example,
 # if you have added a new bipolar channel via `eeg_bipolar_channels` and now wish
@@ -390,9 +390,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# analyze_channels: Union[
-#     Literal["all"], Literal["ch_types"], Iterable["str"]
-# ] = "ch_types"
+analyze_channels: Union[Literal["all"], Literal["ch_types"], Iterable["str"]] = "all"
 # """
 # The names of the channels to analyze during ERP/ERF and time-frequency analysis
 # steps. For certain paradigms, e.g. EEG ERP research, it is common to constrain
@@ -412,7 +410,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# reader_extra_params: dict = {}
+reader_extra_params: dict = {}
 # """
 # Parameters to be passed to `read_raw_bids()` calls when importing raw data.
 
@@ -423,7 +421,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# read_raw_bids_verbose: Optional[Literal["error"]] = None
+read_raw_bids_verbose: Optional[Literal["error"]] = None
 # """
 # Verbosity level to pass to `read_raw_bids(..., verbose=read_raw_bids_verbose)`.
 # If you know your dataset will contain files that are not perfectly BIDS
@@ -435,7 +433,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 # BREAK DETECTION
 # ---------------
 
-# find_breaks: bool = False
+find_breaks: bool = True  # set to true
 # """
 # During an experimental run, the recording might be interrupted by breaks of
 # various durations, e.g. to allow the participant to stretch, blink, and swallow
@@ -463,7 +461,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# min_break_duration: float = 15.0
+min_break_duration: float = 15.0
 # """
 # The minimal duration (in seconds) of a data segment without any experimental
 # events for it to be considered a "break". Note that the minimal duration of the
@@ -481,7 +479,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """  # noqa : E501
 
-# t_break_annot_start_after_previous_event: float = 5.0
+t_break_annot_start_after_previous_event: float = 5.0
 # """
 # Once a break of at least
 # [`min_break_duration`][mne_bids_pipeline._config.min_break_duration]
@@ -508,7 +506,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """
 
-# t_break_annot_stop_before_next_event: float = 5.0
+t_break_annot_stop_before_next_event: float = 5.0
 # """
 # Similarly to how
 # [`t_break_annot_start_after_previous_event`][mne_bids_pipeline._config.t_break_annot_start_after_previous_event]
@@ -985,7 +983,7 @@ bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
 #     ```
 # """  # noqa: E501
 
-# conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None
+conditions: Optional[Union[Iterable[str], Dict[str, str]]] = None  # tbd
 # """
 # The time-locked events based on which to create evoked responses.
 # This can either be name of the experimental condition as specified in the
