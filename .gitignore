@@ -160,7 +160,7 @@ cython_debug/
 #.idea/
 
 # custom
-data/
 !data/*.fif
 !data/bad_channels.json
-
+data/*/
+data/*.zip
