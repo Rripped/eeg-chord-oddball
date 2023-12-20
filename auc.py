@@ -195,7 +195,7 @@ def generate_AUC_ROC(epoch_standard, epoch_deviant, window_length=3, stepsize=1)
 
     AUC_time_curve = []
     for sample_index in range(0, length - window_length + 1, stepsize):
-        print(sample_index)
+        #print(sample_index)
         standard_data = epoch_standard_data[:, :, sample_index]
         deviant_data = epoch_deviant_data[:, :, sample_index]
 
@@ -247,7 +247,7 @@ def normalize_columns(arr):
     return normalized_arr
 
 
-print(normalize_columns(test_array1[0]))
+#print(normalize_columns(test_array1[0]))
 
 
 def generate_AUC_ROC_normalized(
@@ -287,7 +287,7 @@ def generate_AUC_ROC_normalized(
         )
 
         loo = sklearn.model_selection.LeaveOneOut()
-        scores = Parallel(n_jobs=16)(
+        scores = Parallel(n_jobs=4)(
             delayed(fit_and_score)(
                 train_index,
                 data[train_index],
@@ -339,8 +339,8 @@ def generate_AUC_ROC_sliding_window(
     # epoch_deviant_data = test_array2
     # epoch_deviant_data = np.random.random((100, 64, 256))
 
-    epoch_standard_data = epoch_standard
-    epoch_deviant_data = epoch_deviant
+    epoch_standard_data = moving_window_smoothing(epoch_standard, window_length)
+    epoch_deviant_data = moving_window_smoothing(epoch_deviant, window_length)
 
     length = len(epoch_standard_data[0, 0])
 
@@ -385,8 +385,8 @@ def generate_AUC_ROC_sliding_window_normalized(
     # epoch_deviant_data = epoch_deviant.get_data()
     # epoch_deviant_data = test_array2
     # epoch_deviant_data = np.random.random((100, 64, 256))
-    epoch_standard_data = epoch_standard
-    epoch_deviant_data = epoch_deviant
+    epoch_standard_data = moving_window_smoothing(epoch_standard, window_length)
+    epoch_deviant_data = moving_window_smoothing(epoch_deviant, window_length)
 
     length = len(epoch_standard_data[0, 0])
 
@@ -425,3 +425,81 @@ def generate_AUC_ROC_sliding_window_normalized(
 # AUC_time_curve = generate_AUC_ROC(0, 0, window_length=3, stepsize=1)
 # plt.plot(AUC_time_curve)
 # plt.show()
+
+def generate_AUC_ROC_legacy(epoch_standard, epoch_deviant, window_length=3, stepsize=1):
+    epoch_standard_data = epoch_standard
+    epoch_deviant_data = epoch_deviant
+    length = len(epoch_standard_data[0, 0])
+
+    AUC_time_curve = []
+    for sample_index in range(0, length - window_length + 1, stepsize):
+        #print(sample_index)
+        standard_data = epoch_standard_data[:, :, sample_index]
+        deviant_data = epoch_deviant_data[:, :, sample_index]
+
+        for i in range(1, window_length):
+            standard_data = np.concatenate(
+                (standard_data, epoch_standard_data[:, :, sample_index + i])
+            )
+            deviant_data = np.concatenate(
+                (deviant_data, epoch_deviant_data[:, :, sample_index + i])
+            )
+
+        data = np.concatenate((standard_data, deviant_data))
+        classification = np.concatenate(
+            (
+                [0 for _ in range(len(standard_data))],
+                [1 for _ in range(len(deviant_data))],
+            )
+        )
+        # LDA
+        lda = LDA()
+        lda.fit(data, classification)
+        w = lda.coef_.T
+
+        y = data.dot(w).T[0]
+
+        # AUC
+        AUC_value = sklearn.metrics.roc_auc_score(classification, y)
+
+        AUC_time_curve.append(AUC_value)
+    return AUC_time_curve
+
+def generate_AUC_ROC_legacy_sw(epoch_standard, epoch_deviant, window_length=3, stepsize=1):
+    epoch_standard_data = moving_window_smoothing(epoch_standard, window_length)
+    epoch_deviant_data = moving_window_smoothing(epoch_deviant, window_length)
+    length = len(epoch_standard_data[0, 0])
+
+    AUC_time_curve = []
+    for sample_index in range(0, length - window_length + 1, stepsize):
+        #print(sample_index)
+        standard_data = epoch_standard_data[:, :, sample_index]
+        deviant_data = epoch_deviant_data[:, :, sample_index]
+
+        for i in range(1, window_length):
+            standard_data = np.concatenate(
+                (standard_data, epoch_standard_data[:, :, sample_index + i])
+            )
+            deviant_data = np.concatenate(
+                (deviant_data, epoch_deviant_data[:, :, sample_index + i])
+            )
+
+        data = np.concatenate((standard_data, deviant_data))
+        classification = np.concatenate(
+            (
+                [0 for _ in range(len(standard_data))],
+                [1 for _ in range(len(deviant_data))],
+            )
+        )
+        # LDA
+        lda = LDA()
+        lda.fit(data, classification)
+        w = lda.coef_.T
+
+        y = data.dot(w).T[0]
+
+        # AUC
+        AUC_value = sklearn.metrics.roc_auc_score(classification, y)
+
+        AUC_time_curve.append(AUC_value)
+    return AUC_time_curve
