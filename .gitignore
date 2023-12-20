@@ -163,3 +163,4 @@ cython_debug/
 !data/bad_channels.json
 data/*/
 data/*.zip
+data/*.fif
