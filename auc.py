@@ -1,13 +1,8 @@
-import mne
-import matplotlib.pyplot as plt
-import sys
-
-sys.path.insert(1, "../")
-
 import numpy as np
 import sklearn
 import scipy
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from joblib import Parallel, delayed
 
 test_array1 = np.array(
     [
@@ -171,31 +166,97 @@ test_array2 = np.array(
     ]
 )
 
-from joblib import Parallel, delayed
-
 
 def fit_and_score(index, X_train, X_test, y_train, y_test):
+    """
+    Performs LDA and returns the value computed for a test value, which was not used to fit the LDA
+
+    Args:
+        index (int): index of the leave-one-out iteration
+        X_train (numpy.ndarray): Training Data
+        X_test (numpy.ndarray): Test Data
+        y_train (numpy.ndarray): Training annotations
+        y_test (numpy.ndarray): Test annotations
+
+    Returns:
+        float: Score for the test data
+    """
+    # Compute LDA on the training data and annotations
     lda = LDA()
     lda.fit(X_train, y_train)
+
+    # Compute the LDA score of the testdata
     score = lda.decision_function(X_test)[0]
     return score
 
+def normalize_columns(arr):
+    """
+    Normalize the columns of a 2D np.array, such that mean=0 and std=1
+
+    Args:
+        arr (2D numpy.ndarray): The Array which columns should be normalized.
+
+    Returns:
+        2D numpy.ndarray: The arr which normalized columns
+    """
+    # Calculate the mean and standard deviation for each column
+    means = np.mean(arr, axis=0, keepdims=True)
+    stds = np.std(arr, axis=0, keepdims=True)
+
+    # Normalize each column
+    normalized_arr = (arr - means) / stds
+
+    return normalized_arr
+
+def moving_window_smoothing(arr, window_length):
+    """
+    Apply moving window smoothing to the 3rd dimension of an array.
+
+    Args:
+        arr (numpy.ndarray): Input array.
+        window_length (int): Length of the moving window.
+
+    Returns:
+        numpy.ndarray: Smoothed array.
+    """
+    shape = arr.shape
+    smoothed = np.zeros(shape)
+
+    # Applying moving window smoothing via the third dimension
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            smoothed[i, j, :] = scipy.ndimage.uniform_filter1d(
+                arr[i, j, :], size=window_length
+            )
+
+    return smoothed
+
 
 def generate_AUC_ROC(epoch_standard, epoch_deviant, window_length=3, stepsize=1):
-    # epoch_standard_data = epoch_standard.get_data()
-    # epoch_standard_data = test_array1
-    # epoch_standard_data = np.random.random((1000, 64, 256))
-    # epoch_deviant_data = epoch_deviant.get_data()
-    # epoch_deviant_data = test_array2
-    # epoch_deviant_data = np.random.random((100, 64, 256))
+    """
+    Generates a curve of AUC_ROC values based on leave-one-out validation on LDA. For each timepoint in the output as many consecutive 
+    timepoints are taken as specified in window_length.
+
+    Args:
+        epoch_standard (3D numpy.ndarray): Epochs of the standard stimulus
+        epoch_deviant (3D numpy.ndarray): Epochs of the oddball stimulus
+        window_length (int, optional): Length of the window considered per output point. Defaults to 3.
+        stepsize (int, optional): Value of the step between two output points. Defaults to 1.
+
+    Returns:
+        list of float: Curve of AUC_ROC values
+    """
     epoch_standard_data = epoch_standard
     epoch_deviant_data = epoch_deviant
 
     length = len(epoch_standard_data[0, 0])
 
     AUC_time_curve = []
+
+    # Iterate over the outputpoints
     for sample_index in range(0, length - window_length + 1, stepsize):
-        #print(sample_index)
+
+        # Extract and prepare the data for the LDA
         standard_data = epoch_standard_data[:, :, sample_index]
         deviant_data = epoch_deviant_data[:, :, sample_index]
 
@@ -215,6 +276,7 @@ def generate_AUC_ROC(epoch_standard, epoch_deviant, window_length=3, stepsize=1)
             )
         )
 
+        # Use the leave-one-out validation
         loo = sklearn.model_selection.LeaveOneOut()
         scores = Parallel(n_jobs=4)(
             delayed(fit_and_score)(
@@ -234,38 +296,33 @@ def generate_AUC_ROC(epoch_standard, epoch_deviant, window_length=3, stepsize=1)
     return AUC_time_curve
 
 
-def normalize_columns(arr):
-    # Calculate the mean and standard deviation for each column
-    means = np.mean(arr, axis=0, keepdims=True)
-    # print(means)
-    stds = np.std(arr, axis=0, keepdims=True)
-    # print(stds)
-
-    # Normalize each column
-    normalized_arr = (arr - means) / stds
-
-    return normalized_arr
-
-
-#print(normalize_columns(test_array1[0]))
-
-
 def generate_AUC_ROC_normalized(
     epoch_standard, epoch_deviant, window_length=3, stepsize=1
 ):
-    # epoch_standard_data = epoch_standard.get_data()
-    # epoch_standard_data = test_array1
-    # epoch_standard_data = np.random.random((1000, 64, 256))
-    # epoch_deviant_data = epoch_deviant.get_data()
-    # epoch_deviant_data = test_array2
-    # epoch_deviant_data = np.random.random((100, 64, 256))
+    """
+    Generates a curve of AUC_ROC values based on leave-one-out validation on LDA. For each timepoint in the output as many consecutive 
+    timepoints are taken as specified in window_length. All of the columns in the table for LDA are normalized before computing the LDA.
+
+    Args:
+        epoch_standard (3D numpy.ndarray): Epochs of the standard stimulus
+        epoch_deviant (3D numpy.ndarray): Epochs of the oddball stimulus
+        window_length (int, optional): Length of the window considered per output point. Defaults to 3.
+        stepsize (int, optional): Value of the step between two output points. Defaults to 1.
+
+    Returns:
+        list of float: Curve of AUC_ROC values
+    """
     epoch_standard_data = epoch_standard
     epoch_deviant_data = epoch_deviant
 
     length = len(epoch_standard_data[0, 0])
 
     AUC_time_curve = []
+
+    # Iterate over the outputpoints
     for sample_index in range(0, length - window_length + 1, stepsize):
+
+        # Extract and prepare the data for the LDA
         standard_data = epoch_standard_data[:, :, sample_index]
         deviant_data = epoch_deviant_data[:, :, sample_index]
 
@@ -286,6 +343,7 @@ def generate_AUC_ROC_normalized(
             )
         )
 
+        # Use the leave-one-out validation
         loo = sklearn.model_selection.LeaveOneOut()
         scores = Parallel(n_jobs=4)(
             delayed(fit_and_score)(
@@ -305,46 +363,31 @@ def generate_AUC_ROC_normalized(
     return AUC_time_curve
 
 
-def moving_window_smoothing(arr, window_length):
-    """
-    Apply moving window smoothing to the 3rd dimension of an array.
-
-    Parameters:
-    arr (numpy.ndarray): Input array.
-    window_length (int): Length of the moving window.
-
-    Returns:
-    numpy.ndarray: Smoothed array.
-    """
-    shape = arr.shape
-    smoothed = np.zeros(shape)
-
-    # Anwenden des Moving Window Smoothing über die dritte Dimension
-    for i in range(shape[0]):
-        for j in range(shape[1]):
-            smoothed[i, j, :] = scipy.ndimage.uniform_filter1d(
-                arr[i, j, :], size=window_length
-            )
-
-    return smoothed
-
-
 def generate_AUC_ROC_sliding_window(
     epoch_standard, epoch_deviant, window_length=3, stepsize=1
 ):
-    # epoch_standard_data = epoch_standard.get_data()
-    # epoch_standard_data = test_array1
-    # epoch_standard_data = np.random.random((1000, 64, 256))
-    # epoch_deviant_data = epoch_deviant.get_data()
-    # epoch_deviant_data = test_array2
-    # epoch_deviant_data = np.random.random((100, 64, 256))
+    """
+    Generates a curve of AUC_ROC values based on leave-one-out validation on LDA. For each timepoint in the output the mean is taken of as many 
+    consecutive timepoints as specified in window_length (smoothed over a sliding window).
 
+    Args:
+        epoch_standard (3D numpy.ndarray): Epochs of the standard stimulus
+        epoch_deviant (3D numpy.ndarray): Epochs of the oddball stimulus
+        window_length (int, optional): Length of the window considered per output point. Defaults to 3.
+        stepsize (int, optional): Value of the step between two output points. Defaults to 1.
+
+    Returns:
+        list of float: Curve of AUC_ROC values
+    """
+    # Smooth the inputdata
     epoch_standard_data = moving_window_smoothing(epoch_standard, window_length)
     epoch_deviant_data = moving_window_smoothing(epoch_deviant, window_length)
 
     length = len(epoch_standard_data[0, 0])
 
     AUC_time_curve = []
+
+    # Iterate over the outputpoints
     for sample_index in range(0, length, stepsize):
         standard_data = epoch_standard_data[:, :, sample_index]
         deviant_data = epoch_deviant_data[:, :, sample_index]
@@ -357,6 +400,7 @@ def generate_AUC_ROC_sliding_window(
             )
         )
 
+        # Use the leave-one-out validation
         loo = sklearn.model_selection.LeaveOneOut()
         scores = Parallel(n_jobs=4)(
             delayed(fit_and_score)(
@@ -379,19 +423,32 @@ def generate_AUC_ROC_sliding_window(
 def generate_AUC_ROC_sliding_window_normalized(
     epoch_standard, epoch_deviant, window_length=3, stepsize=1
 ):
-    # epoch_standard_data = epoch_standard.get_data()
-    # epoch_standard_data = test_array1
-    # epoch_standard_data = np.random.random((1000, 64, 256))
-    # epoch_deviant_data = epoch_deviant.get_data()
-    # epoch_deviant_data = test_array2
-    # epoch_deviant_data = np.random.random((100, 64, 256))
+    """
+    Generates a curve of AUC_ROC values based on leave-one-out validation on LDA. For each timepoint in the output the mean is taken of as many 
+    consecutive timepoints as specified in window_length (smoothed over a sliding window). All of the columns in the table for LDA are normalized 
+    before computing the LDA.
+
+    Args:
+        epoch_standard (3D numpy.ndarray): Epochs of the standard stimulus
+        epoch_deviant (3D numpy.ndarray): Epochs of the oddball stimulus
+        window_length (int, optional): Length of the window considered per output point. Defaults to 3.
+        stepsize (int, optional): Value of the step between two output points. Defaults to 1.
+
+    Returns:
+        list of float: Curve of AUC_ROC values
+    """
+    # Smooth the inputdata
     epoch_standard_data = moving_window_smoothing(epoch_standard, window_length)
     epoch_deviant_data = moving_window_smoothing(epoch_deviant, window_length)
 
     length = len(epoch_standard_data[0, 0])
 
     AUC_time_curve = []
+
+    # Iterate over the outputpoints
     for sample_index in range(0, length, stepsize):
+
+        # Extract and prepare the data for the LDA
         standard_data = epoch_standard_data[:, :, sample_index]
         deviant_data = epoch_deviant_data[:, :, sample_index]
 
@@ -404,6 +461,7 @@ def generate_AUC_ROC_sliding_window_normalized(
             )
         )
 
+        # Use the leave-one-out validation
         loo = sklearn.model_selection.LeaveOneOut()
         scores = Parallel(n_jobs=4)(
             delayed(fit_and_score)(
@@ -422,18 +480,30 @@ def generate_AUC_ROC_sliding_window_normalized(
     return AUC_time_curve
 
 
-# AUC_time_curve = generate_AUC_ROC(0, 0, window_length=3, stepsize=1)
-# plt.plot(AUC_time_curve)
-# plt.show()
-
 def generate_AUC_ROC_legacy(epoch_standard, epoch_deviant, window_length=3, stepsize=1):
+    """
+    First, fastest and simplest version to generate a curve of AUC_ROC values based on LDA since it leaves out the leave-one-out validation. 
+    For each timepoint in the output as many consecutive timepoints are taken as specified in window_length.
+
+    Args:
+        epoch_standard (3D numpy.ndarray): Epochs of the standard stimulus
+        epoch_deviant (3D numpy.ndarray): Epochs of the oddball stimulus
+        window_length (int, optional): Length of the window considered per output point. Defaults to 3.
+        stepsize (int, optional): Value of the step between two output points. Defaults to 1.
+
+    Returns:
+        list of float: Curve of AUC_ROC values
+    """
     epoch_standard_data = epoch_standard
     epoch_deviant_data = epoch_deviant
     length = len(epoch_standard_data[0, 0])
 
     AUC_time_curve = []
+
+    # Iterate over the outputpoints
     for sample_index in range(0, length - window_length + 1, stepsize):
-        #print(sample_index)
+
+        # Extract and prepare the data for the LDA
         standard_data = epoch_standard_data[:, :, sample_index]
         deviant_data = epoch_deviant_data[:, :, sample_index]
 
@@ -452,6 +522,7 @@ def generate_AUC_ROC_legacy(epoch_standard, epoch_deviant, window_length=3, step
                 [1 for _ in range(len(deviant_data))],
             )
         )
+
         # LDA
         lda = LDA()
         lda.fit(data, classification)
@@ -466,13 +537,30 @@ def generate_AUC_ROC_legacy(epoch_standard, epoch_deviant, window_length=3, step
     return AUC_time_curve
 
 def generate_AUC_ROC_legacy_sw(epoch_standard, epoch_deviant, window_length=3, stepsize=1):
+    """
+    First, fastest and simplest version to generate a curve of AUC_ROC values based on LDA since it leaves out the leave-one-out validation. 
+    For each timepoint in the output the mean is taken of as many consecutive timepoints as specified in window_length (smoothed over a sliding window).
+
+    Args:
+        epoch_standard (3D numpy.ndarray): Epochs of the standard stimulus
+        epoch_deviant (3D numpy.ndarray): Epochs of the oddball stimulus
+        window_length (int, optional): Length of the window considered per output point. Defaults to 3.
+        stepsize (int, optional): Value of the step between two output points. Defaults to 1.
+
+    Returns:
+        list of float: Curve of AUC_ROC values
+    """
+    # Smooth the inputdata
     epoch_standard_data = moving_window_smoothing(epoch_standard, window_length)
     epoch_deviant_data = moving_window_smoothing(epoch_deviant, window_length)
     length = len(epoch_standard_data[0, 0])
 
     AUC_time_curve = []
+
+    # Iterate over the outputpoints
     for sample_index in range(0, length - window_length + 1, stepsize):
-        #print(sample_index)
+
+        # Extract and prepare the data for the LDA
         standard_data = epoch_standard_data[:, :, sample_index]
         deviant_data = epoch_deviant_data[:, :, sample_index]
 
@@ -491,6 +579,7 @@ def generate_AUC_ROC_legacy_sw(epoch_standard, epoch_deviant, window_length=3, s
                 [1 for _ in range(len(deviant_data))],
             )
         )
+
         # LDA
         lda = LDA()
         lda.fit(data, classification)
