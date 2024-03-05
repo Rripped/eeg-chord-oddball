@@ -592,3 +592,39 @@ def generate_AUC_ROC_legacy_sw(epoch_standard, epoch_deviant, window_length=3, s
 
         AUC_time_curve.append(AUC_value)
     return AUC_time_curve
+
+def generate_forward_model_sw(epoch_standard, epoch_deviant, list_of_interest_points, window_length=3, stepsize=1):
+
+    # Extract and prepare the data for the LDA
+    standard_data = epoch_standard[:, :, 0]
+    deviant_data = epoch_deviant[:, :, 0]
+
+
+    for i in range(len(epoch_standard)):
+        for j in range(len(epoch_standard[1])):
+            standard_data[i,j] = np.mean(epoch_standard[i,j,list_of_interest_points[0]*stepsize-window_length//2:list_of_interest_points[-1]*stepsize+window_length//2])
+
+    for i in range(len(epoch_deviant)):
+        for j in range(len(epoch_deviant[1])):
+            deviant_data[i,j] = np.mean(epoch_deviant[i,j,list_of_interest_points[0]*stepsize-window_length//2:list_of_interest_points[-1]*stepsize+window_length//2])
+
+
+    data = np.concatenate((standard_data, deviant_data))
+    classification = np.concatenate(
+        (
+            [0 for _ in range(len(standard_data))],
+            [1 for _ in range(len(deviant_data))],
+        )
+    )
+
+    # LDA
+    lda = LDA()
+    lda.fit(data, classification)
+    w = lda.coef_.T
+
+    y = data.dot(w).T[0]
+
+    up = np.dot(data.T,y)
+    down = np.dot(y.T,y)
+
+    return up / down
