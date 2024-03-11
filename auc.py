@@ -594,37 +594,65 @@ def generate_AUC_ROC_legacy_sw(epoch_standard, epoch_deviant, window_length=3, s
     return AUC_time_curve
 
 def generate_forward_model_sw(epoch_standard, epoch_deviant, list_of_interest_points, window_length=3, stepsize=1):
+    """ 
+    Compute the average forward model over the significant time intervall
 
-    # Extract and prepare the data for the LDA
-    standard_data = epoch_standard[:, :, 0]
-    deviant_data = epoch_deviant[:, :, 0]
+    Args:
+        epoch_standard (3D numpy.ndarray): Epochs of the standard stimulus
+        epoch_deviant (3D numpy.ndarray): Epochs of the oddball stimulus
+        list_of_interest_points (list of int): indices of the significant time intervall
+        window_length (int, optional): Length of the window considered per output point. Defaults to 3.
+        stepsize (int, optional): Value of the step between two output points. Defaults to 1.
 
+    Returns:
+        numpy.ndarray: Average forward model with length 64 corresponding to the channels of the EEG cap
+    """
 
-    for i in range(len(epoch_standard)):
-        for j in range(len(epoch_standard[1])):
-            standard_data[i,j] = np.mean(epoch_standard[i,j,list_of_interest_points[0]*stepsize-window_length//2:list_of_interest_points[-1]*stepsize+window_length//2])
+    # Smooth the inputdata
+    epoch_standard_data = moving_window_smoothing(epoch_standard, window_length)
+    epoch_deviant_data = moving_window_smoothing(epoch_deviant, window_length)
+    length = len(epoch_standard_data[0, 0])
 
-    for i in range(len(epoch_deviant)):
-        for j in range(len(epoch_deviant[1])):
-            deviant_data[i,j] = np.mean(epoch_deviant[i,j,list_of_interest_points[0]*stepsize-window_length//2:list_of_interest_points[-1]*stepsize+window_length//2])
+    forward_models = []
+    i = 0
 
+    # Iterate over the outputpoints
+    for sample_index in range(0, length - window_length + 1, stepsize):
+        if i in list_of_interest_points:
 
-    data = np.concatenate((standard_data, deviant_data))
-    classification = np.concatenate(
-        (
-            [0 for _ in range(len(standard_data))],
-            [1 for _ in range(len(deviant_data))],
-        )
-    )
+            # Extract and prepare the data for the LDA
+            standard_data = epoch_standard_data[:, :, sample_index]
+            deviant_data = epoch_deviant_data[:, :, sample_index]
 
-    # LDA
-    lda = LDA()
-    lda.fit(data, classification)
-    w = lda.coef_.T
+            for i in range(1, window_length):
+                standard_data = np.concatenate(
+                    (standard_data, epoch_standard_data[:, :, sample_index + i])
+                )
+                deviant_data = np.concatenate(
+                    (deviant_data, epoch_deviant_data[:, :, sample_index + i])
+                )
 
-    y = data.dot(w).T[0]
+            data = np.concatenate((standard_data, deviant_data))
+            classification = np.concatenate(
+                (
+                    [0 for _ in range(len(standard_data))],
+                    [1 for _ in range(len(deviant_data))],
+                )
+            )
 
-    up = np.dot(data.T,y)
-    down = np.dot(y.T,y)
+            # LDA
+            lda = LDA()
+            lda.fit(data, classification)
+            w = lda.coef_.T
 
-    return up / down
+            y = data.dot(w).T[0]
+
+            up = np.dot(data.T,y)
+            down = np.dot(y.T,y)
+
+            forward_models.append(up / down)
+
+        i = i+1
+
+    forward_models = np.array(forward_models)
+    return np.mean(forward_models, axis=0)
