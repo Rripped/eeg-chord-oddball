@@ -7,9 +7,7 @@ from mne_bids import BIDSPath
 
 from mne_bids_pipeline.typing import (
     PathLike,
-    ArbitraryContrast,
-    FloatArrayLike,
-    DigMontageType,
+    ArbitraryContrast
 )
 
 # custom
@@ -34,7 +32,7 @@ study_name: str = "chord-oddball"
 #     ```
 # """
 
-bids_root: Optional[PathLike] = os.environ.get("BIDS_ROOT")
+bids_root: Optional[PathLike] = os.environ.get("D:\\Uni\\1_Semester\\EEG\\eeg-chord-oddball\\data\\ds003570")
 # """
 # Specify the BIDS root directory. Pass an empty string or ```None` to use
 # the value specified in the `BIDS_ROOT` environment variable instead.
